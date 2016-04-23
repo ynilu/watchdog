@@ -1,5 +1,6 @@
-#!/usr/bin/python 
+#!/usr/bin/python
 #+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
 #|R|a|s|p|b|e|r|r|y|P|i|.|c|o|m|.|t|w|
 #+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 # Copyright (c) 2015, raspberrypi.com.tw
@@ -24,15 +25,18 @@ Motor_Vertical_Pin = 13
 h_shift = 0.3
 v_shift = 0.2
 
+h_in_use = 0;
+v_in_use = 0;
+
 pause_time = 0.1
 
-h_position = 7 
-v_position = 8 
+h_position = 7
+v_position = 8
 
 h_upperbound = 11
-h_lowerbound = 3 
+h_lowerbound = 3
 v_upperbound = 11
-v_lowerbound = 5 
+v_lowerbound = 5
 
 GPIO.setmode(GPIO.BOARD)
 GPIO.setup(Motor_Horizontal_Pin, GPIO.OUT, initial=GPIO.LOW)
@@ -41,9 +45,10 @@ GPIO.setup(Motor_Vertical_Pin, GPIO.OUT, initial=GPIO.LOW)
 
 def init(pin):
     pwm = GPIO.PWM(pin, 50)
-    return pwm 
+    return pwm
 
 def changePostion(pwm, position):
+    time.sleep(pause_time)
     pwm.start(position)
     time.sleep(pause_time)
     pwm.stop()
@@ -65,7 +70,7 @@ def turnUp(v):
 def turnDown(v):
     global v_position
     if v_position - v_shift > v_lowerbound:
-        v_position -= v_shift 
+        v_position -= v_shift
     else:
         v_position = v_lowerbound
     changePostion(v, v_position)
@@ -73,7 +78,7 @@ def turnDown(v):
 def turnRight(h):
     global h_position
     if h_position + h_shift < h_upperbound:
-        h_position += h_shift 
+        h_position += h_shift
     else:
         h_position = h_upperbound
     changePostion(h, h_position)
@@ -81,7 +86,7 @@ def turnRight(h):
 def turnLeft(h):
     global h_position
     if h_position - h_shift > h_lowerbound:
-        h_position -= h_shift 
+        h_position -= h_shift
     else:
         h_position = h_lowerbound
     changePostion(h, h_position)
@@ -104,18 +109,21 @@ def ajax():
     arrow = request.forms.get("arrow")
     sys.stderr.write(arrow+'\n')
 
-    if int(arrow) == 40:
-        turnUp(init(Motor_Vertical_Pin))
+    if v_in_use == 0:
+        v_in_use = 1
+        if int(arrow) == 40:
+            turnUp(init(Motor_Vertical_Pin))
+        if int(arrow) == 38:
+            turnDown(init(Motor_Vertical_Pin))
+        v_in_use = 0
 
-    if int(arrow) == 38:
-        turnDown(init(Motor_Vertical_Pin))
-
-    if int(arrow) == 37:
-        turnRight(init(Motor_Horizontal_Pin))
-
-    if int(arrow) == 39:
-        turnLeft(init(Motor_Horizontal_Pin))
-
+    if h_in_use == 0:
+        h_in_use = 1
+        if int(arrow) == 37:
+            turnRight(init(Motor_Horizontal_Pin))
+        if int(arrow) == 39:
+            turnLeft(init(Motor_Horizontal_Pin))
+        h_in_use = 0
 
 try:
     run(host='0.0.0.0', port=745)
