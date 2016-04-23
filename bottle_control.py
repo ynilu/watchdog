@@ -106,6 +106,8 @@ def index():
 
 @route('/ajax', method='POST')
 def ajax():
+    global h_in_use
+    global v_in_use
     arrow = request.forms.get("arrow")
     sys.stderr.write(arrow+'\n')
 
